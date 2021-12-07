@@ -1,0 +1,471 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace задание
+{
+    class Program
+    {
+        //функция вывода меню
+        static void PrintMenu()
+        {
+            Console.WriteLine();
+            Console.WriteLine("1. Формирование массива с помощью модуля рандомных чисел");
+            Console.WriteLine("2. Формирование массива вручную");
+            Console.WriteLine("3. Печать массива");
+            Console.WriteLine("4. Удаление всех четных элементов");
+            Console.WriteLine("5. Добавление K элементов в начало массива");
+            Console.WriteLine("6. Перестановка четных элементов в начало массива, а нечетных - в конец");
+            Console.WriteLine("7. Поиск первого четного элемента");
+            Console.WriteLine("8. Сортировка простым выбором");
+            Console.WriteLine("9. Бинарный поиск введенного элемента в отсортированном массиве");
+            Console.WriteLine();
+        }
+
+        //функция проверки корректности введенного числа (используется при создании и дополнении массива)
+        static int IsCorrect(int enterDigit, bool isCorrect, int number)
+        {
+            do
+            {
+                try
+                {
+                    Console.Write($"Введите {number}-й элемент массива: ");
+                    enterDigit = Convert.ToInt32(Console.ReadLine());
+                    isCorrect = true;
+                }
+
+                catch (FormatException)
+                {
+                    Console.WriteLine("число введено неверно!");
+                    isCorrect = false;
+                }
+                catch (OverflowException)
+                {
+                    Console.WriteLine("число введено неверно!");
+                    isCorrect = false;
+                }
+            } while (!isCorrect);
+
+            return enterDigit;
+        }
+
+        //функция проверки корректности введенного числа (используется для определения количества вводимых чисел)
+        static int ReadIntNumber(string text, int minDigit, int maxDigit)
+        {
+            bool isConvert;
+            int enterDigit;
+
+            Console.Write(text);
+
+            do
+            {
+                isConvert = int.TryParse(Console.ReadLine(), out enterDigit);
+                if (!(enterDigit >= minDigit && enterDigit <= maxDigit)) isConvert = false;
+                if (!isConvert) Console.WriteLine("число введено неверно!");
+            } while (!isConvert);
+
+            return enterDigit;
+        }
+
+        static bool IsEmpty(ref int[] arr)
+        {
+            bool isEmpty;
+            if (arr == null || arr.Length == 0) isEmpty = true;
+            else isEmpty = false;
+            return isEmpty;
+        }
+        //функция, создающая массив с помощью случайных чисел (задача 1)
+        static int[] MakeArrayRandom(int sizeOfArray)
+        {
+            int[] arr = new int[sizeOfArray];
+            Random rand = new Random();
+            int i;
+
+            for (i = 0; i < sizeOfArray; i++)
+            {
+                arr[i] = rand.Next(-100, 100);
+            }
+
+            Console.WriteLine($"Создан массив длины {sizeOfArray}");
+
+            return arr;
+        }
+
+        //функция, создающая массив вручную (задача 2)
+        static int[] MakeArrayConsole(int sizeOfArray)
+        {
+            int[] arr = new int[sizeOfArray];
+            int enterDigit = 0, i;
+            bool isCorrect = false;
+
+            for (i = 0; i < sizeOfArray; i++)
+            {
+                arr[i] = IsCorrect(enterDigit, isCorrect, i + 1);
+            }
+
+            Console.WriteLine($"Создан массив длины {sizeOfArray}");
+
+            return arr;
+        }
+
+        //функция печати массива (задача 3)
+        static void PrintArray(ref int[] arr, ref int sizeOfArray)
+        {
+            int i;
+            bool isEmpty;
+            isEmpty = IsEmpty(ref arr);
+            if (isEmpty) Console.WriteLine("Массив пустой");
+            else
+            {
+                Console.Write("Получен массив: ");
+
+                for (i = 0; i < sizeOfArray; i++)
+                {
+                    Console.Write($"{arr[i]} ");
+                }
+
+                Console.WriteLine();
+            }
+        }
+
+        //функция, наполняющая массив без четных элементов (вспомогательная для следующей функции)
+        static void AddUnevenElements(int[] arrDel, int[] arr, int sizeOfArray)
+        {
+            int newSize = 0, i;
+            bool isUneven;
+
+            for (i = 0; i < sizeOfArray; i++)
+            {
+                isUneven = Convert.ToBoolean(arr[i] % 2);
+                if (isUneven)
+                {
+                    arrDel[newSize++] = arr[i];
+                }
+            }
+
+        }
+
+        //функция, создающая массив без четных чисел (задача 4)
+        static int[] MakeArrayOfUnevenElements(ref int[] arr, ref int sizeOfArray)
+        {
+            bool isUneven;
+            bool isEmpty;
+            int countOfUneven = 0, i;
+            isEmpty = IsEmpty(ref arr);
+            if (isEmpty) Console.WriteLine("Массив пустой");
+            else
+            {
+                for (i = 0; i < sizeOfArray; i++)
+                {
+                    isUneven = Convert.ToBoolean(arr[i] % 2);
+                    if (isUneven)
+                    {
+                        countOfUneven++;
+                    }
+                }
+
+                int[] arrDel = new int[countOfUneven];
+
+                if (countOfUneven == 0) Console.WriteLine("Все элементы массива четные, теперь количество его элементов равно нулю");
+                else if (countOfUneven == sizeOfArray) Console.WriteLine("В массиве нет четных элементов");
+                else Console.WriteLine("Массив успешно изменен");
+
+                AddUnevenElements(arrDel, arr, sizeOfArray);
+                arr = arrDel;
+                sizeOfArray = countOfUneven;
+            }
+            return arr;
+
+        }
+
+        //функция, добавляющая новые элементы определенного пользователем количества (задача 5)
+        static int[] AddNewElements(ref int[] arr, ref int sizeOfArray, int K)
+        {
+            bool isCorrect = false;
+            int enterDigit = 0, i;
+            sizeOfArray = arr.Length + K;
+            int[] arrAdd = new int[sizeOfArray];
+
+            for (i = 0; i < sizeOfArray; i++)
+            {
+                if (i < K) arrAdd[i] = IsCorrect(enterDigit, isCorrect, i + 1);
+                else arrAdd[i] = arr[i - K];
+            }
+
+            Console.WriteLine("Элемент(ы) успешно добавлен(ы) в начало массива");
+            arr = arrAdd;
+            return arr;
+        }
+
+        //функция, переставляющая четные элементы в начало массива, а нечетные - в конец (задача 6)
+        static int[] Permutation(ref int[] arr, ref int sizeOfArray)
+        {
+            int countOfUneven = 0, countOfEven = 0, newSizePermutation = 0, i;
+            bool isUneven;
+            bool isEmpty;
+            int[] arrPermut = new int[sizeOfArray];
+
+            isEmpty = IsEmpty(ref arr);
+            if (isEmpty) Console.WriteLine("Массив пустой");
+            else
+            {
+                for (i = 0; i < sizeOfArray; i++)
+                {
+                    isUneven = Convert.ToBoolean(arr[i] % 2);
+                    if (!isUneven) countOfEven++;
+                    else countOfUneven++;
+                }
+
+                if (countOfEven == 0) Console.WriteLine("В массиве нет четных элементов");
+                else if (countOfUneven == 0) Console.WriteLine("В массиве нет нечетных элементов");
+                else
+                {
+                    for (i = 0; i < sizeOfArray; i++)
+                    {
+                        isUneven = Convert.ToBoolean(arr[i] % 2);
+                        if (!isUneven) arrPermut[newSizePermutation++] = arr[i];
+                    }
+
+                    for (i = 0; i < sizeOfArray; i++)
+                    {
+                        isUneven = Convert.ToBoolean(arr[i] % 2);
+                        if (isUneven) arrPermut[newSizePermutation++] = arr[i];
+                    }
+
+                    Console.WriteLine("Элементы массива успешно переставлены");
+                    arr = arrPermut;
+                }
+            }
+            return arr;
+        }
+        
+        //функция поиска первого четного элемента в массиве (задача 7)
+        static int SearchFirstEven(ref int[] arr, ref int sizeOfArray)
+        {
+            int i, numOfFirsEven = 0, countOfEven = 0, countOfIter = 0;
+            bool isUneven;
+            bool isEmpty;
+
+            isEmpty = IsEmpty(ref arr);
+            if (isEmpty)
+            {
+                Console.WriteLine("Массив пустой");
+                return -1;
+            }
+            else
+            {
+                for (i = 0; i < sizeOfArray; i++)
+                {
+                    isUneven = Convert.ToBoolean(arr[i] % 2);
+                    if (!isUneven) countOfEven++;
+                }
+
+                if (countOfEven == 0)
+                {
+                    Console.WriteLine("В массиве нет четных элементов");
+                    return -1;
+                }
+                else
+                {
+                    for (i = 0; i < sizeOfArray; i++)
+                    {
+                        countOfIter++;
+                        isUneven = Convert.ToBoolean(arr[i] % 2);
+                        if (!isUneven)
+                        {
+                            numOfFirsEven = i;
+                            break;
+                        }
+                    }
+
+                    Console.WriteLine($"Номер первого четного элемента - {numOfFirsEven + 1}, элемент = {arr[numOfFirsEven]}");
+                    Console.WriteLine($"Количество сравнений = {countOfIter}");
+                    return arr[numOfFirsEven];
+                }
+            }
+        }
+
+        //сортировка простым выбором (задача 8)
+        static int[] SelectionSort(ref int[] arr, ref int sizeOfArray, ref int numSort)
+        {
+            numSort = ReadIntNumber("Сортировка по возрастанию - 1, по убыванию - 2: ", 1, 2);
+            int numElem = 0, temp, i = 0, j;
+            bool isEmpty;
+
+            isEmpty = IsEmpty(ref arr);
+            if (isEmpty) Console.WriteLine("Массив пустой");
+            else
+            {
+                if (numSort == 1)
+                {
+                    int elem = Int32.MaxValue;
+
+                    while (i < sizeOfArray)
+                    {
+                        for (j = i; j < sizeOfArray; j++)
+                        {
+                            if (arr[j] < elem)
+                            {
+                                elem = arr[j];
+                                numElem = j;
+                            }
+                        }
+
+                        temp = arr[i];
+                        arr[i] = elem;
+                        arr[numElem] = temp;
+                        elem = Int32.MaxValue;
+                        i++;
+                    }
+                }
+                else
+                {
+                    int elem = Int32.MinValue;
+
+                    while (i < sizeOfArray)
+                    {
+                        for (j = i; j < sizeOfArray; j++)
+                        {
+                            if (arr[j] > elem)
+                            {
+                                elem = arr[j];
+                                numElem = j;
+                            }
+                        }
+
+                        temp = arr[i];
+                        arr[i] = elem;
+                        arr[numElem] = temp;
+                        elem = Int32.MinValue;
+                        i++;
+                    }
+                }
+                Console.WriteLine("Массив успешно отсортирован");
+            }
+            return arr;
+        }
+        //бинарный поиск элемента (задача 9)
+        static int FindElement(ref int[] arr, ref int sizeOfArray, int numberForFind, ref int numSort)
+        {
+            int left = 0, right = sizeOfArray - 1, middle = 0, countOfIter = 0;
+            bool isEmpty;
+
+            isEmpty = IsEmpty(ref arr);
+            if (isEmpty)
+            {
+                Console.WriteLine("Массив пустой");
+                return -1;
+            }
+            else
+            {
+                if (numSort == 1)
+                {
+                    SelectionSort(ref arr, ref sizeOfArray, ref numSort);
+                    PrintArray(ref arr, ref sizeOfArray);
+
+                    while (left < right)
+                    {
+                        middle = (left + right) / 2;
+                        if (numberForFind == arr[middle])
+                        {
+                            countOfIter += 1;
+                            break;
+                        }
+                        else if (numberForFind < arr[middle])
+                        {
+                            right = middle;
+                            countOfIter += 1;
+                        }
+                        else
+                        {
+                            left = middle + 1;
+                            countOfIter += 1;
+                        }
+                    }
+                }
+                else
+                {
+                    SelectionSort(ref arr, ref sizeOfArray, ref numSort);
+                    PrintArray(ref arr, ref sizeOfArray);
+
+                    while (left < right)
+                    {
+                        middle = (left + right) / 2;
+                        if (numberForFind == arr[middle])
+                        {
+                            countOfIter += 1;
+                            break;
+                        }
+                        else if (numberForFind > arr[middle])
+                        {
+                            left = middle;
+                            countOfIter += 1;
+                        }
+                        else
+                        {
+                            right = middle + 1;
+                            countOfIter += 1;
+                        }
+                    }
+                }
+                if (arr[middle] == numberForFind) Console.WriteLine($"Номер элемента {numberForFind} равен {middle + 1}");
+                else Console.WriteLine("Элемент не найден");
+                Console.WriteLine($"Количество сравнений = {countOfIter}");
+                return left + 1;
+            }
+            
+        }
+
+        static void Main(string[] args)
+        {
+            int check, sizeOfArray = 0, K;
+            int[] arr = null;
+            ref int[] arrRef = ref arr;
+            ref int sizeOfArrayRef = ref sizeOfArray;
+            int numSort = 0;
+            ref int sorted = ref numSort;
+
+            do
+            {
+                PrintMenu(); //вывод меню для пользователей
+                check = ReadIntNumber("", 1, 9); //чтение введенного пользователем значения
+                switch (check)
+                {
+                    case 1: //формирование массива с помощью случайных чисел
+                        {
+                            sizeOfArray = ReadIntNumber("Введите размер массива: ", 0, 1000); //ограничение для количества элементов = 1000
+                            arr = MakeArrayRandom(sizeOfArray);
+                            break;
+                        }
+                    case 2: //формирование массива вручную
+                        {
+                            sizeOfArray = ReadIntNumber("Введите размер массива: ", 0, 1000); //ограничение для количества элементов = 1000
+                            arr = MakeArrayConsole(sizeOfArray);
+                            break;
+                        }
+                    case 3: PrintArray(ref arr, ref sizeOfArray); break; //печать массива
+                    case 4: MakeArrayOfUnevenElements(ref arr, ref sizeOfArray); break; //удаление четных элементов
+                    case 5: //добавление К чисел в начало массива
+                        {
+                            K = ReadIntNumber("Введите положительное количество чисел для добавления в начало массива: ", 1, 100);
+                            AddNewElements(ref arr, ref sizeOfArray, K);
+                            break;
+                        }
+                    case 6: Permutation(ref arr, ref sizeOfArray); break; //перестановка четных элементов в начало, а нечетных - в конец
+                    case 7: SearchFirstEven(ref arr, ref sizeOfArray); break; //поиск первого четного элемента
+                    case 8: SelectionSort(ref arr, ref sizeOfArray, ref numSort); break; //сортировка простым выбором
+                    case 9: //поиск введеннного пользователем элемента
+                        {
+                            int numberForFind = ReadIntNumber("Введите число, котрое нужно найти в массиве: ", -1000000, 1000000);
+                            FindElement(ref arr, ref sizeOfArray, numberForFind, ref numSort);
+                            break;
+                        }
+                }
+
+            } while (check < 9);
+
+        }
+    }
+}
