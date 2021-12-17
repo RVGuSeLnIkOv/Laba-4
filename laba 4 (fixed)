@@ -183,11 +183,13 @@ namespace задание
         //функция, добавляющая новые элементы определенного пользователем количества (задача 5)
         static int[] AddNewElements(ref int[] arr, ref int sizeOfArray, int K)
         {
+            bool isEmpty;
+            isEmpty = IsEmpty(ref arr);
+            if (isEmpty) sizeOfArray = 0;
             bool isCorrect = false;
             int enterDigit = 0, i;
-            sizeOfArray = arr.Length + K;
+            sizeOfArray += K;
             int[] arrAdd = new int[sizeOfArray];
-
             for (i = 0; i < sizeOfArray; i++)
             {
                 if (i < K) arrAdd[i] = IsCorrect(enterDigit, isCorrect, i + 1);
@@ -240,7 +242,7 @@ namespace задание
             }
             return arr;
         }
-        
+
         //функция поиска первого четного элемента в массиве (задача 7)
         static int SearchFirstEven(ref int[] arr, ref int sizeOfArray)
         {
@@ -290,14 +292,13 @@ namespace задание
         //сортировка простым выбором (задача 8)
         static int[] SelectionSort(ref int[] arr, ref int sizeOfArray, ref int numSort)
         {
-            numSort = ReadIntNumber("Сортировка по возрастанию - 1, по убыванию - 2: ", 1, 2);
-            int numElem = 0, temp, i = 0, j;
             bool isEmpty;
-
             isEmpty = IsEmpty(ref arr);
             if (isEmpty) Console.WriteLine("Массив пустой");
             else
             {
+                numSort = ReadIntNumber("Сортировка по возрастанию - 1, по убыванию - 2: ", 1, 2);
+                int numElem = 0, temp, i = 0, j;
                 if (numSort == 1)
                 {
                     int elem = Int32.MaxValue;
@@ -349,73 +350,43 @@ namespace задание
         //бинарный поиск элемента (задача 9)
         static int FindElement(ref int[] arr, ref int sizeOfArray, int numberForFind, ref int numSort)
         {
-            int left = 0, right = sizeOfArray - 1, middle = 0, countOfIter = 0;
-            bool isEmpty;
-
-            isEmpty = IsEmpty(ref arr);
-            if (isEmpty)
+            int left = 0, right = arr.Length - 1, middle = 0, countOfIter = 0;
+            arr = SelectionSort(ref arr, ref sizeOfArray, ref numSort);
+            PrintArray(ref arr, ref sizeOfArray);
+            if (numSort == 1)
             {
-                Console.WriteLine("Массив пустой");
-                return -1;
+                do
+                {
+                    middle = (left + right) / 2;
+                    countOfIter++;
+                    if (arr[middle] == numberForFind)
+                    {
+                        left = middle;
+                        break;
+                    }
+                    if (arr[middle] < numberForFind) left = middle + 1;
+                    else right = middle;
+                } while (left != right);
             }
             else
             {
-                if (numSort == 1)
+                do
                 {
-                    SelectionSort(ref arr, ref sizeOfArray, ref numSort);
-                    PrintArray(ref arr, ref sizeOfArray);
-
-                    while (left < right)
+                    middle = (left + right) / 2;
+                    countOfIter++;
+                    if (arr[middle] == numberForFind)
                     {
-                        middle = (left + right) / 2;
-                        if (numberForFind == arr[middle])
-                        {
-                            countOfIter += 1;
-                            break;
-                        }
-                        else if (numberForFind < arr[middle])
-                        {
-                            right = middle;
-                            countOfIter += 1;
-                        }
-                        else
-                        {
-                            left = middle + 1;
-                            countOfIter += 1;
-                        }
+                        left = middle;
+                        break;
                     }
-                }
-                else
-                {
-                    SelectionSort(ref arr, ref sizeOfArray, ref numSort);
-                    PrintArray(ref arr, ref sizeOfArray);
-
-                    while (left < right)
-                    {
-                        middle = (left + right) / 2;
-                        if (numberForFind == arr[middle])
-                        {
-                            countOfIter += 1;
-                            break;
-                        }
-                        else if (numberForFind > arr[middle])
-                        {
-                            left = middle;
-                            countOfIter += 1;
-                        }
-                        else
-                        {
-                            right = middle + 1;
-                            countOfIter += 1;
-                        }
-                    }
-                }
-                if (arr[middle] == numberForFind) Console.WriteLine($"Номер элемента {numberForFind} равен {middle + 1}");
-                else Console.WriteLine("Элемент не найден");
-                Console.WriteLine($"Количество сравнений = {countOfIter}");
-                return left + 1;
+                    if (arr[middle] < numberForFind) right = middle - 1;
+                    else left = middle;
+                } while (left != right);
             }
-            
+            if (arr[left] == numberForFind) Console.WriteLine($"Номер элемента {numberForFind} равен {left + 1}");
+            else Console.WriteLine("Элемент не найден");
+            Console.WriteLine($"Количество сравнений = {countOfIter}");
+            return left + 1;
         }
 
         static void Main(string[] args)
@@ -458,8 +429,14 @@ namespace задание
                     case 8: SelectionSort(ref arr, ref sizeOfArray, ref numSort); break; //сортировка простым выбором
                     case 9: //поиск введеннного пользователем элемента
                         {
-                            int numberForFind = ReadIntNumber("Введите число, котрое нужно найти в массиве: ", -1000000, 1000000);
-                            FindElement(ref arr, ref sizeOfArray, numberForFind, ref numSort);
+                            bool isEmpty;
+                            isEmpty = IsEmpty(ref arr);
+                            if (isEmpty) Console.WriteLine("Массив пустой");
+                            else
+                            {
+                                int numberForFind = ReadIntNumber("Введите число, котрое нужно найти в массиве: ", -1000000, 1000000);
+                                FindElement(ref arr, ref sizeOfArray, numberForFind, ref numSort);
+                            }
                             break;
                         }
                 }
